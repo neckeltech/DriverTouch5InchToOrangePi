@@ -23,57 +23,53 @@ public class Touch5Inch {
 
     private int quantityOfClick = 0;
 
-    public void inicialize(){
+    public void inicialize() {
         try {
             PlatformManager.setPlatform(Platform.ORANGEPI);
 
             spi = SpiFactory.getInstance(SpiVariables.SPI_CHANNEL, SpiVariables.FREQUENCY, SpiVariables.SPI_MODE);
             System.out.println("Ready...");
 
-            while(true) {
+            while (true) {
                 try {
                     requestingAndReadingSpi();
                     getPositionXandY();
                     processesSpiDataAndClick();
-                } catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
-        } catch (Exception e){
+        } catch (Exception e) {
             System.out.println("error to inicialize spi");
             e.printStackTrace();
         }
     }
 
     private void simulateMouseClickIfReady() {
-        if(positionPrevX.size() == 10){
+        if (positionPrevX.size() == 10) {
             quantityOfClick++;
 
-            double mediaX = (int)positionPrevX.stream().mapToDouble(Integer::doubleValue).average().orElse(0.0);
-            double mediaY = (int)positionPrevY.stream().mapToDouble(Integer::doubleValue).average().orElse(0.0);
+            double mediaX = (int) positionPrevX.stream().mapToDouble(Integer::doubleValue).average().orElse(0.0);
+            double mediaY = (int) positionPrevY.stream().mapToDouble(Integer::doubleValue).average().orElse(0.0);
 
             mediaX = (SpiVariables.MAX_WIDTH_SCREEN * mediaX) / SpiVariables.MAX_SPI_RETURN_WIDTH_SCREEN;
             mediaY = (SpiVariables.MAX_HEIGTHS_SCREEN * mediaY) / SpiVariables.MAX_SPI_RETURN_HEIGTH_SCREEN;
 
-            MouseOptions.click((int)mediaX, (int)mediaY);
-            System.out.println("clique " + quantityOfClick + " - x: " + mediaX + ", y: " + mediaY);
+            MouseOptions.click((int) mediaX, (int) mediaY);
         }
     }
 
     private void clearPositions() {
-        if(positionPrevX.size() > 0){
-            System.out.println("clenning possition");
-        }
         positionPrevX.clear();
         positionPrevY.clear();
     }
 
-    private void requestingAndReadingSpi(){
+    private void requestingAndReadingSpi() {
         try {
             byte[] bufferX = spi.write(SpiVariables.BYTES_TO_SEND_REQUEST_SPI_X);
             byte[] bufferY = spi.write(SpiVariables.BYTES_TO_SEND_REQUEST_SPI_Y);
             spiData = ArraysOptions.concat(bufferX, bufferY);
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -85,8 +81,10 @@ public class Touch5Inch {
 
     private void processesSpiDataAndClick() {
         if (isPressing()) {
-            setMemoryPosition();
-            simulateMouseClickIfReady();
+            if (originalX > 0 && originalY > 0) {
+                setMemoryPosition();
+                simulateMouseClickIfReady();
+            }
         } else {
             clearPositions();
         }
