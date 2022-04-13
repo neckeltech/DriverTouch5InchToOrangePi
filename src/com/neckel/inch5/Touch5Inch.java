@@ -40,13 +40,13 @@ public class Touch5Inch {
                 }
             }
         } catch (Exception e) {
-            System.out.println("error to inicialize spi");
+            System.out.println("Error to inicialize spi");
             e.printStackTrace();
         }
     }
 
     private void simulateMouseClickIfReady() {
-        if (positionPrevX.size() == 10) {
+        if (positionPrevX.size() == 20) {
             quantityOfClick++;
 
             double mediaX = (int) positionPrevX.stream().mapToDouble(Integer::doubleValue).average().orElse(0.0);
@@ -55,13 +55,17 @@ public class Touch5Inch {
             mediaX = (SpiVariables.MAX_WIDTH_SCREEN * mediaX) / SpiVariables.MAX_SPI_RETURN_WIDTH_SCREEN;
             mediaY = (SpiVariables.MAX_HEIGTHS_SCREEN * mediaY) / SpiVariables.MAX_SPI_RETURN_HEIGTH_SCREEN;
 
-            MouseOptions.click((int) mediaX, (int) mediaY);
+            System.out.println("Click- X: " + mediaX + " - Y: " + mediaY);
+            MouseOptions.getInstance().click((int) mediaX, (int) mediaY);
         }
     }
 
     private void clearPositions() {
-        positionPrevX.clear();
-        positionPrevY.clear();
+        if(quantityOfClick > 0) {
+            positionPrevX.clear();
+            positionPrevY.clear();
+            quantityOfClick = 0;
+        }
     }
 
     private void requestingAndReadingSpi() {
@@ -81,10 +85,8 @@ public class Touch5Inch {
 
     private void processesSpiDataAndClick() {
         if (isPressing()) {
-            if (originalX > 0 && originalY > 0) {
                 setMemoryPosition();
                 simulateMouseClickIfReady();
-            }
         } else {
             clearPositions();
         }
@@ -99,7 +101,7 @@ public class Touch5Inch {
     }
 
     public boolean isPressing() {
-        return spiData[4] != 127;
+        return originalX > 0 && originalY > 0;
     }
 
     private void setMemoryPosition() {

@@ -4,7 +4,7 @@ import com.neckel.inch5.Touch5Inch;
 
 public class Application {
     public static void main(String[] args) {
-        System.out.println("inicialize...");
+        System.out.println("Inicialize...");
 
         Touch5Inch touch = new Touch5Inch();
         touch.inicialize();
